@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="manifest" href="manifest.json">
+<title>Roulette Tracker</title>
+<style>
+body{font-family:sans-serif;margin:0;padding:1rem;background:#111;color:#eee}
+h1{font-size:1.2rem;margin:0 0 .5rem}
+#bet{font-size:1.4rem;margin:.5rem 0}
+table{width:100%;border-collapse:collapse;margin-top:.5rem}
+th,td{border:1px solid #666;padding:.25rem;text-align:center;font-size:.9rem}
+button{padding:.4rem .8rem;font-size:1rem;margin-top:.5rem}
+select{width:100%;padding:.4rem;font-size:1rem}
+</style>
+</head>
+<body>
+<h1>Roulette Tracker</h1>
+
+<select id="pick">
+  <option value="37">00</option>
+  <option value="0">0</option>
+  <script>for(let i=1;i<=36;i++){document.write(`<option value="${i}">${i}</option>`);}</script>
+</select>
+<button onclick="record()">Record spin</button>
+
+<div id="bet">Next bet: –</div>
+
+<table id="log"><thead>
+<tr><th>#</th><th>Red</th><th>Black</th><th>Even</th><th>Odd</th><th>1‑18</th><th>19‑36</th></tr>
+</thead><tbody></tbody></table>
+
+<script>
+const RED=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+let spins=[];
+
+function cat(n){return{
+  red:RED.includes(n),
+  black:n!==0&&!RED.includes(n),
+  even:n!==0&&n%2===0,
+  odd:n%2===1,
+  low:n>=1&&n<=18,
+  high:n>=19&&n<=36};}
+
+function opposite(x){return{Red:"Black",Black:"Red",Even:"Odd",Odd:"Even","1‑18":"19‑36","19‑36":"1‑18"}[x];}
+
+function record(){
+  const v=parseInt(document.getElementById("pick").value,10);
+  const n=v===37?0:v;
+  spins.unshift({n,...cat(n)});
+  if(spins.length>11)spins.pop();
+  draw(); save();
+}
+
+function draw(){
+  document.querySelector("#log tbody").innerHTML=spins.map(s=>`
+   <tr><td>${s.n===0?"00":s.n}</td>
+   <td>${s.red?"X":""}</td><td>${s.black?"X":""}</td>
+   <td>${s.even?"X":""}</td><td>${s.odd?"X":""}</td>
+   <td>${s.low?"X":""}</td><td>${s.high?"X":""}</td></tr>`).join("");
+
+  const cats=[["Red","red"],["Black","black"],["Even","even"],
+              ["Odd","odd"],["1‑18","low"],["19‑36","high"]];
+  for(const [label,key] of cats){
+    let streak=0;
+    for(const s of spins){if(s[key]){streak++;}else{break;}}
+    if(streak>=2){
+      document.getElementById("bet").textContent=
+        `Next bet: ${opposite(label)} $${2**(streak-2)}`;
+      return;
+    }
+  }
+  document.getElementById("bet").textContent="Next bet: –";
+}
+
+function save(){localStorage.setItem("rt",JSON.stringify(spins));}
+function load(){const d=localStorage.getItem("rt");if(d){spins=JSON.parse(d);}draw();}
+load(); if('serviceWorker'in navigator){navigator.serviceWorker.register('sw.js');}
+</script>
+</body>
+</html>
