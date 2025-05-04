@@ -24,6 +24,8 @@ select{width:100%;padding:.4rem;font-size:1rem}
   <script>for(let i=1;i<=36;i++){document.write(`<option value="${i}">${i}</option>`);}</script>
 </select>
 <button onclick="record()">Record spin</button>
+<button onclick="reset()">Reset log</button>
+
 
 <div id="bet">Next bet: –</div>
 
@@ -59,6 +61,13 @@ function draw(){
    <td>${s.red?"X":""}</td><td>${s.black?"X":""}</td>
    <td>${s.even?"X":""}</td><td>${s.odd?"X":""}</td>
    <td>${s.low?"X":""}</td><td>${s.high?"X":""}</td></tr>`).join("");
+
+function reset(){
+  spins=[];
+  save();
+  draw();
+}
+
 
   const cats=[["Red","red"],["Black","black"],["Even","even"],
               ["Odd","odd"],["1‑18","low"],["19‑36","high"]];
